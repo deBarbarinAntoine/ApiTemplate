@@ -74,11 +74,34 @@ vendor:
 build/api:
 	@echo 'Building cmd/api...'
 	GOOS=linux GOARCH=amd64 go build -ldflags='-s' -o=./bin/linux_amd64/api ./cmd/api
-	GOOS=windows GOARCH=amd64 go build -ldflags='-s' -o=./b
+	GOOS=windows GOARCH=amd64 go build -ldflags='-s' -o=./bin/windows_amd64/api ./cmd/api
 
 # =================================================================================== #
-# EXECUTE BINARY
+# PRODUCTION
 # =================================================================================== #
+
+# production_host_ip = "<host_ip_address>"
+
+## production/connect: connect to the production server
+.PHONY: production/connect
+production/connect:
+	ssh apitemplate@${production_host_ip}
+
+## production/deploy/api: deploy the api to production
+.PHONY: production/deploy/api
+production/deploy/api:
+	rsync -P ./bin/linux_amd64/api apitemplate@${production_host_ip}:~
+	rsync -rP --delete ./migrations apitemplate@${production_host_ip}:~
+	rsync -P ./remote/production/api.service apitemplate@${production_host_ip}:~
+	rsync -P ./remote/production/Caddyfile apitemplate@${production_host_ip}:~
+	ssh -t apitemplate@${production_host_ip} '\
+		migrate -path ~/migrations -database $$APITEMPLATE_DB_DSN up \
+		&& sudo mv ~/api.service /etc/systemd/system/ \
+		&& sudo systemctl enable api \
+		&& sudo systemctl restart api \
+		&& sudo mv ~Caddyfile /etc/caddy/ \
+		&& sudo systemctl reload caddy \
+		'
 
 ## bin/api: execute the bin/api application in ./bin/linux_amd64/api
 .PHONY: bin/api

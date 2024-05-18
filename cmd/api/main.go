@@ -3,6 +3,7 @@ package main
 import (
 	"ApiTemplate/internal/data"
 	"ApiTemplate/internal/mailer"
+	"ApiTemplate/internal/vcs"
 	"context"
 	"database/sql"
 	"expvar"
@@ -18,7 +19,9 @@ import (
 	_ "github.com/lib/pq"
 )
 
-const version = "1.0.0"
+var (
+	version = vcs.Version()
+)
 
 type config struct {
 	port int

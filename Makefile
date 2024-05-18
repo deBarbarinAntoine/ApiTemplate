@@ -74,4 +74,14 @@ vendor:
 build/api:
 	@echo 'Building cmd/api...'
 	GOOS=linux GOARCH=amd64 go build -ldflags='-s' -o=./bin/linux_amd64/api ./cmd/api
-	GOOS=windows GOARCH=amd64 go build -ldflags='-s' -o=./bin/windows_amd64/api ./cmd/api
+	GOOS=windows GOARCH=amd64 go build -ldflags='-s' -o=./b
+
+# =================================================================================== #
+# EXECUTE BINARY
+# =================================================================================== #
+
+## bin/api: execute the bin/api application in ./bin/linux_amd64/api
+.PHONY: bin/api
+bin/api:
+	@echo 'Executing binary...'
+	@./bin/linux_amd64/api -dsn=${APITEMPLATE_DB_DSN}
